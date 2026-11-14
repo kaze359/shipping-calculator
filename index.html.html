@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>跨境代采费用自助估算</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+        body{background:linear-gradient(135deg,#fef7ed 0%,#f8fafc 100%);color:#1f2937;line-height:1.6;padding:30px 0;min-height:100vh}
+        .container{max-width:960px;margin:0 auto;padding:0 20px}
+        .header{text-align:center;margin-bottom:28px}
+        .header h1{font-size:24px;font-weight:600;color:#111827;margin-bottom:8px}
+        .header p{font-size:13px;color:#6b7280}
+        .disclaimer{background:#fff;border-left:4px solid #f97316;border-radius:8px;padding:14px 18px;margin-bottom:24px;font-size:13px;color:#92400e;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+        .main-wrapper{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+        .card{background:#fff;border-radius:12px;padding:24px;box-shadow:0 4px 20px rgba(0,0,0,.05)}
+        .card h2{font-size:17px;font-weight:600;margin-bottom:20px;color:#111827;padding-bottom:8px;border-bottom:2px solid #fed7aa;display:inline-block}
+        .form-group{margin-bottom:18px}
+        .form-group label{display:block;font-size:13px;font-weight:500;color:#374151;margin-bottom:8px}
+        .form-group input,.form-group select{width:100%;padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:14px;background:#f9fafb;transition:all .2s}
+        .form-group input:focus,.form-group select:focus{outline:none;border-color:#f97316;background:#fff;box-shadow:0 0 0 3px rgba(249,115,22,.1)}
+        .radio-group{display:flex;gap:24px;margin-bottom:12px}
+        .radio-group label{display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer;font-weight:normal}
+        .checkbox-label{display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer;font-weight:normal}
+        .tip-card{border-radius:8px;padding:12px 14px;font-size:12px;margin-bottom:18px;line-height:1.6}
+        .tip-card{background:#fff7ed;color:#92400e}
+        .tip-card.gray{background:#f3f4f6;color:#4b5563}
+        .size-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+        .calc-btn{width:100%;padding:12px;background:linear-gradient(135deg,#f97316 0%,#ea580c 100%);color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:500;cursor:pointer;margin-top:6px;transition:transform .2s,box-shadow .2s}
+        .calc-btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(249,115,22,.3)}
+
+        /* 结果区 */
+        .result-box{margin-top:24px;display:none}
+        .result-box.show{display:block}
+        .result-stage{border-radius:10px;padding:16px 18px;margin-bottom:14px}
+        .stage-1{background:#f0fdf4;border:1px solid #bbf7d0}
+        .stage-2{background:#fefce8;border:1px solid #fde68a}
+        .result-stage-title{font-size:14px;font-weight:600;margin-bottom:8px}
+        .stage-1 .result-stage-title{color:#166534}
+        .stage-2 .result-stage-title{color:#854d0e}
+        .result-stage-total{font-size:20px;font-weight:600;text-align:center;margin-top:8px}
+        .stage-1 .result-stage-total{color:#15803d}
+        .stage-2 .result-stage-total{color:#ca8a04}
+        .result-stage-note{font-size:11px;margin-top:8px;line-height:1.5}
+        .stage-1 .result-stage-note{color:#166534}
+        .stage-2 .result-stage-note{color:#854d0e}
+        .result-final{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:16px;text-align:center}
+        .result-final-title{font-size:13px;color:#52525b;margin-bottom:6px}
+        .result-final-price{font-size:26px;font-weight:700;color:#111827;letter-spacing:.5px}
+        .result-final-note{font-size:11px;color:#71717a;margin-top:8px;line-height:1.6}
+
+        /* 公式带注释 */
+        .formula-row{display:flex;align-items:flex-end;justify-content:center;gap:4px;flex-wrap:wrap;font-size:13px;color:#333}
+        .f-item{display:flex;flex-direction:column;align-items:center}
+        .f-num{font-weight:500;line-height:1.2}
+        .f-note{font-size:10px;color:#9ca3af;line-height:1.2;margin-top:2px;white-space:nowrap}
+        .f-op{padding:0 2px;line-height:1.2;padding-bottom:12px}
+
+        /* 右侧规则 */
+        .rule-block{margin-bottom:22px}
+        .rule-block h3{font-size:14px;font-weight:600;margin-bottom:10px;color:#1f2937;padding-left:10px;border-left:3px solid #f97316}
+        .rule-list{list-style:none;font-size:13px;color:#52525b;line-height:1.8}
+        .rule-list li{padding:4px 0 4px 14px;position:relative}
+        .rule-list li::before{content:"";position:absolute;left:0;top:12px;width:5px;height:5px;border-radius:50%;background:#f97316}
+        .highlight{color:#ea580c;font-weight:500}
+        .gray-note{font-size:12px;color:#9ca3af;display:block;padding-left:0;margin-top:2px}
+        .gray-note::before{display:none}
+
+        .rate-tip{font-size:11px;color:#9ca3af;margin-top:4px}
+
+        @media (max-width:768px){
+            .main-wrapper{grid-template-columns:1fr}
+            .header h1{font-size:20px}
+            .result-final-price{font-size:22px}
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>跨境代采费用自助估算</h1>
+            <p>所有价格均为预估参考 · 最终以实际结算为准</p>
+        </div>
+
+        <div class="disclaimer">
+            <strong>服务边界：</strong>仅提供代聊、代付、代收代发服务，不参与商品交易本身，不承担商品真假、发货时效、跑单等风险；不垫付任何费用。
+        </div>
+
+        <div class="main-wrapper">
+            <!-- 左侧计算器 -->
+            <div class="card">
+                <h2>费用快速估算(单笔)</h2>
+
+                <div class="form-group">
+                    <label>邮寄方式</label>
+                    <div class="radio-group">
+                        <label><input type="radio" name="shipType" value="pinyou" checked onchange="switchMode()">拼邮</label>
+                        <label><input type="radio" name="shipType" value="zhiyou" onchange="switchMode()">直邮上门</label>
+                    </div>
+                </div>
+
+                <div class="tip-card" id="modeTip">
+                    💡 适合小件多件凑单分摊取件费更划算；大体积泡货存在分拣单独计费风险，建议囤货直邮。
+                </div>
+
+                <div class="form-group">
+                    <label>商品品类</label>
+                    <select id="itemCategory" onchange="switchCategory()">
+                        <option value="weight">常规重量类（衣服、谷子、小型周边等）</option>
+                        <option value="volume">泡货类（大玩偶、抱枕、带大包装盒手办等）</option>
+                        <option value="card" id="cardOption">小卡类（拼邮固定单价）</option>
+                    </select>
+                </div>
+
+                <div class="form-group" id="priceBox">
+                    <label>商品总价（马币 RM）</label>
+                    <input type="number" id="priceMYR" placeholder="请输入商品总价" min="0" value="0">
+                    <div class="rate-tip" id="priceTip">仅代付/一条龙需支付商品本金，仅代收无需支付</div>
+                </div>
+
+                <div class="form-group">
+                    <label>服务类型</label>
+                    <select id="serviceType" onchange="switchService()">
+                        <option value="pay">仅代付（4 ¥/单）</option>
+                        <option value="receive">仅代收（6 ¥/单）</option>
+                        <option value="all">一条龙（7 ¥/单）</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="needChat" checked>
+                        需要代聊服务（+2 RM/单）
+                    </label>
+                    <div class="rate-tip">仅提供沟通对接，不承担交易风险</div>
+                </div>
+
+                <!-- 重量/体积模式 -->
+                <div id="weightBox">
+                    <div class="form-group">
+                        <label>计费方式</label>
+                        <select id="weightType" onchange="switchWeightType()">
+                            <option value="actual">按实际重量</option>
+                            <option value="volume">按体积计算</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="actualBox">
+                        <label>预估重量（kg）</label>
+                        <input type="number" id="actualWeight" placeholder="请输入重量" min="0" step="0.1" value="0">
+                    </div>
+                    <div class="form-group" id="volumeBox" style="display:none">
+                        <label>预估尺寸（cm）</label>
+                        <div class="size-grid">
+                            <input type="number" id="length" placeholder="长" min="0" value="0">
+                            <input type="number" id="width" placeholder="宽" min="0" value="0">
+                            <input type="number" id="height" placeholder="高" min="0" value="0">
+                        </div>
+                        <div class="tip-card gray" style="margin-top:10px;margin-bottom:0">
+                            体积重 = (长×宽×高) ÷ 6000 × 28马币/kg，泡货默认按此计费
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 小卡模式 -->
+                <div id="cardBox" style="display:none">
+                    <div class="form-group">
+                        <label>小卡数量（张）</label>
+                        <input type="number" id="cardCount" placeholder="请输入数量" min="1" value="1">
+                    </div>
+                    <div class="tip-card gray" style="margin-top:10px;margin-bottom:0">
+                        含普通卡套 2 马币/张；带卡砖、带盒商品按重量计费
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>结算汇率（支付宝实汇 + 0.04）</label>
+                    <input type="number" id="exchangeRate" placeholder="例：1.69" step="0.01" value="1.69">
+                    <div class="rate-tip" id="rateTip">正在获取今日参考汇率...</div>
+                </div>
+
+                <div class="tip-card gray" style="margin-bottom:0">
+                    📌 仅适用于普通普货；敏感品、特殊品类请单独咨询报价。
+                </div>
+
+                <button class="calc-btn" onclick="calculate()">计算预估费用</button>
+
+                <!-- 结果区 -->
+                <div class="result-box" id="resultBox">
+                    <div class="result-stage stage-1">
+                        <div class="result-stage-title">第一段 · 下单即结算费用</div>
+                        <div class="formula-row" id="stage1Formula"></div>
+                        <div class="result-stage-total" id="stage1Total">¥ 0.00</div>
+                        <div class="result-stage-note" id="stage1Note">* 此部分为确定费用，下单时按此结算</div>
+                    </div>
+
+                    <div class="result-stage stage-2">
+                        <div class="result-stage-title">第二段 · 国际物流费（发货前结）</div>
+                        <div class="formula-row" id="stage2Formula"></div>
+                        <div class="result-stage-total" id="stage2Total">预估 ¥ 0.00</div>
+                        <div class="result-stage-note" id="stage2Note">
+                            * 拼邮仅为预估参考，实际按同批次重量比例分摊<br>
+                            * 受打包、称重、同批次人数影响会有误差
+                        </div>
+                    </div>
+
+                    <div class="result-final">
+                        <div class="result-final-title">两段合计 · 预估参考总价</div>
+                        <div class="result-final-price" id="finalTotal">¥ 0.00</div>
+                        <div class="result-final-note">
+                            * 国内末端运费另计，发货地南京，以实际快递报价为准<br>
+                            * 所有价格均为估算值，受多种因素影响存在误差<br>
+                            * 最终费用以实际称重、当日汇率、实际产生金额为准
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右侧规则 -->
+            <div class="card">
+                <h2>服务规则全解</h2>
+
+                <div class="rule-block">
+                    <h3>一、国际运费规则</h3>
+                    <ul class="rule-list">
+                        <li><span class="highlight">普货单价：28 马币/kg</span></li>
+                        <li class="gray-note">以上为转运仓统一标准，非个人定价</li>
+                        <li>泡货类默认按体积重计费：体积重(kg) = 长×宽×高 ÷ 6000 × 28 马币/kg</li>
+                        <li>重量进位：直邮不满1kg按1kg算；拼邮无首重，按0.1kg向上取整</li>
+                    </ul>
+                </div>
+
+                <div class="rule-block">
+                    <h3>二、服务收费说明</h3>
+                    <ul class="rule-list">
+                        <li><strong>仅代付：</strong>4 元/单，含代付操作，需支付商品本金</li>
+                        <li><strong>仅代收：</strong>6 元/单，仅收货转寄，商品本金由客户自行支付给卖家</li>
+                        <li><strong>一条龙：</strong>7 元/单（代付+代收打包价），含商品本金代付</li>
+                        <li><strong>代聊服务：</strong>2 马币/单，可选加收，无论是否成交均收取</li>
+                    </ul>
+                </div>
+
+                <div class="rule-block">
+                    <h3>三、费用分段说明</h3>
+                    <ul class="rule-list">
+                        <li><strong>第一段（下单时付）</strong>：对应服务费用 + 代聊费 + 商品本金（仅代收不含）</li>
+                        <li><strong>第二段（发货前付）</strong>：取件费 + 国际运费，按当日汇率结算</li>
+                        <li>国内末端运费为拼邮额外费用，另计，发货地南京</li>
+                    </ul>
+                </div>
+
+                <div class="rule-block">
+                    <h3>四、拼邮分摊规则</h3>
+                    <ul class="rule-list">
+                        <li>国际运费：扣除小卡固定费用后，按同批次商品总重量比例分摊</li>
+                        <li>取件费：同批次 Lalamove 实际费用 ÷ 订单人头数，人均分摊</li>
+                        <li>13.3 马币为日常参考价，最终以实际支付凭证为准，会同步账单</li>
+                        <li class="highlight">计算器仅为单包裹预估，受同批次人数、总重量、打包方式影响会有误差，仅作参考，非最终价格</li>
+                    </ul>
+                </div>
+
+                <div class="rule-block">
+                    <h3>五、特殊场景说明</h3>
+                    <ul class="rule-list">
+                        <li>大体积泡货不建议拼邮，若被转运仓分拣需自行承担全额直邮运费</li>
+                        <li>混合订单：小卡费用单独核算，剩余运费按其余商品重量比例分摊</li>
+                        <li>敏感品（二手奢侈品、银行卡、特大件等）需提前咨询，单独报价；违禁品不承接</li>
+                        <li>直邮上门需提供收件人身份证正反面用于海关清关</li>
+                    </ul>
+                </div>
+
+                <div class="rule-block">
+                    <h3>六、其他说明</h3>
+                    <ul class="rule-list">
+                        <li>普通商品包清关，预估时效 10–15 天，不保证具体到货日期</li>
+                        <li>仅为代付代收通道，不承担商品真假、丢件、发货等交易风险，可协助沟通售后</li>
+                        <li>二手商品非质量问题不支持无理由退单，退改需收取对应服务费</li>
+                        <li>所有费用最终以实际产生金额、当日汇率、转运仓实际称重为准</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const $ = id => document.getElementById(id);
+
+        // 初始化
+        window.onload = () => {
+            fetchRate();
+            switchService(); // 初始化服务类型提示
+        };
+
+        // 获取汇率
+        function fetchRate() {
+            fetch('https://api.exchangerate.host/latest?base=MYR&symbols=CNY')
+                .then(r => r.json())
+                .then(data => {
+                    if (data?.rates?.CNY) {
+                        const real = Math.floor(data.rates.CNY * 100) / 100;
+                        $('exchangeRate').value = (real + 0.04).toFixed(2);
+                        $('rateTip').textContent = `今日参考实汇：${real.toFixed(2)}，已自动+0.04`;
+                    } else throw 0;
+                })
+                .catch(() => {
+                    $('rateTip').textContent = '自动获取失败，请手动输入结算汇率';
+                    $('exchangeRate').value = 1.69;
+                });
+        }
+
+        // 切换邮寄模式
+        function switchMode() {
+            const mode = document.querySelector('input[name="shipType"]:checked').value;
+            $('modeTip').className = mode === 'pinyou' ? 'tip-card' : 'tip-card gray';
+            $('modeTip').innerHTML = mode === 'pinyou'
+                ? '💡 适合小件多件凑单分摊取件费更划算；大体积泡货存在分拣单独计费风险，建议囤货直邮。'
+                : '💡 直邮上门需提供身份证正反面清关；所有商品统一按重量/体积计费，大体积无额外分拣风险，适合囤货批量邮寄。';
+            
+            $('cardOption').style.display = mode === 'pinyou' ? 'block' : 'none';
+            if (mode === 'zhiyou' && $('itemCategory').value === 'card') {
+                $('itemCategory').value = 'weight';
+                switchCategory();
+            }
+
+            $('stage2Note').innerHTML = mode === 'pinyou'
+                ? '* 拼邮仅为预估参考，实际按同批次重量比例分摊<br>* 受打包、称重、同批次人数影响会有误差'
+                : '* 取件费按Lalamove实际费用全额收取<br>* 不满1kg按1kg计费，最终以实际称重为准';
+        }
+
+        // 切换服务类型
+        function switchService() {
+            const type = $('serviceType').value;
+            const priceInput = $('priceMYR');
+            const priceTip = $('priceTip');
+            
+            if (type === 'receive') {
+                priceInput.disabled = true;
+                priceInput.style.opacity = '0.6';
+                priceTip.textContent = '仅代收无需支付商品本金，费用由客户直接付给卖家';
+            } else {
+                priceInput.disabled = false;
+                priceInput.style.opacity = '1';
+                priceTip.textContent = '仅代付/一条龙需支付商品本金，仅代收无需支付';
+            }
+        }
+
+        // 切换品类
+        function switchCategory() {
+            const cat = $('itemCategory').value;
+            $('weightBox').style.display = cat === 'card' ? 'none' : 'block';
+            $('cardBox').style.display = cat === 'card' ? 'block' : 'none';
+            
+            if (cat === 'volume') {
+                $('weightType').value = 'volume';
+                switchWeightType();
+            } else if (cat === 'weight') {
+                $('weightType').value = 'actual';
+                switchWeightType();
+            }
+        }
+
+        // 切换重量/体积
+        function switchWeightType() {
+            const type = $('weightType').value;
+            $('actualBox').style.display = type === 'actual' ? 'block' : 'none';
+            $('volumeBox').style.display = type === 'volume' ? 'block' : 'none';
+        }
+
+        // 计算计费重量
+        function calcWeight(w, mode) {
+            if (mode === 'zhiyou') return w <= 1 ? 1 : Math.ceil(w * 10) / 10;
+            return Math.ceil(w * 10) / 10;
+        }
+
+               // 主计算
+        function calculate() {
+            const price = parseFloat($('priceMYR').value) || 0;
+            const service = $('serviceType').value;
+            const needChat = $('needChat').checked;
+            const cat = $('itemCategory').value;
+            const shipMode = document.querySelector('input[name="shipType"]:checked').value;
+            const rate = parseFloat($('exchangeRate').value) || 1.69;
+
+            const chat = needChat ? 2 : 0;
+            const pickup = shipMode === 'pinyou' ? 6.65 : 13.3;
+            const pickupText = shipMode === 'pinyou' ? '13.3/2' : '13.3';
+            const pickupNote = shipMode === 'pinyou' ? '取件费/人头数' : '取件费全额';
+
+            // 国际运费
+            let ship = 0;
+            if (cat === 'card' && shipMode === 'pinyou') {
+                ship = (parseInt($('cardCount').value) || 1) * 2;
+            } else {
+                let w = 0;
+                if ($('weightType').value === 'actual') {
+                    w = parseFloat($('actualWeight').value) || 0;
+                } else {
+                    const l = parseFloat($('length').value) || 0;
+                    const wi = parseFloat($('width').value) || 0;
+                    const h = parseFloat($('height').value) || 0;
+                    w = (l * wi * h) / 6000;
+                }
+                ship = calcWeight(w, shipMode) * 28;
+            }
+
+            // 服务费
+            const feeMap = { pay:4, receive:6, all:7 };
+            const serviceFee = feeMap[service] || 0;
+
+            // 第一段费用：仅代收不计入商品本金
+            let stage1Base = chat;
+            if (service !== 'receive') stage1Base += price;
+            const s1 = stage1Base * rate + serviceFee;
+
+            // 第二段费用
+            const s2 = (pickup + ship) * rate;
+            const total = s1 + s2;
+
+            // ========== 第一段公式 ==========
+            let f1 = '<div class="f-op">=</div><div class="f-op">(</div>';
+            if (service !== 'receive') {
+                f1 += `<div class="f-item"><span class="f-num">${price}</span><span class="f-note">商品费</span></div><div class="f-op">+</div>`;
+            }
+            f1 += `<div class="f-item"><span class="f-num">${chat}</span><span class="f-note">代聊费</span></div>`;
+            f1 += `<div class="f-op">) ×</div>`;
+            f1 += `<div class="f-item"><span class="f-num">${rate}</span><span class="f-note">汇率</span></div><div class="f-op">+</div>`;
+            f1 += `<div class="f-item"><span class="f-num">${serviceFee}</span><span class="f-note">服务费</span></div>`;
+            $('stage1Formula').innerHTML = f1;
+
+            // 仅代收补充备注
+            $('stage1Note').textContent = service === 'receive'
+                ? '* 仅代收不含商品本金，此部分为服务费用，下单时按此结算'
+                : '* 此部分为确定费用，下单时按此结算';
+
+            // ========== 第二段公式 ==========
+            let f2 = '<div class="f-op">=</div><div class="f-op">(</div>';
+            f2 += `<div class="f-item"><span class="f-num">${pickupText}</span><span class="f-note">${pickupNote}</span></div><div class="f-op">+</div>`;
+            f2 += `<div class="f-item"><span class="f-num">${ship.toFixed(2)}</span><span class="f-note">重量×28/kg</span></div>`;
+            f2 += `<div class="f-op">) ×</div>`;
+            f2 += `<div class="f-item"><span class="f-num">${rate}</span><span class="f-note">结算汇率</span></div>`;
+            $('stage2Formula').innerHTML = f2;
+
+            $('stage1Total').textContent = `¥ ${s1.toFixed(2)}`;
+            $('stage2Total').textContent = `预估 ¥ ${s2.toFixed(2)}`;
+            $('finalTotal').textContent = `¥ ${total.toFixed(2)}`;
+            $('resultBox').classList.add('show');
+        }
+    </script>
+</body>
+</html>
